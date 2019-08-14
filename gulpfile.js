@@ -121,10 +121,25 @@ function watchFiles() {
   gulp.watch("./**/*.html", browserSyncReload);
 }
 
+// Dist
+function deleteDist() {
+  return del(["./dist/"]);
+}
+function copyFilesToDist() {
+  var vendorFiles = gulp.src("./vendor/**/*").pipe(gulp.dest("./dist/vendor/"));
+  var jsFiles = gulp.src("./js/*.min.js").pipe(gulp.dest("./dist/js/"));
+  var cssFiles = gulp.src("./css/*.min.css").pipe(gulp.dest("./dist/css/"));
+  var htmlFiles = gulp.src("./*.html").pipe(gulp.dest("./dist/"));
+  var imgFiles = gulp.src("./img/**/*").pipe(gulp.dest("./dist/img/"));
+  var license = gulp.src("./LICENSE").pipe(gulp.dest("./dist"));
+  return merge(vendorFiles, jsFiles, cssFiles, htmlFiles, imgFiles, license);
+}
+
 // Define complex tasks
 const vendor = gulp.series(clean, modules);
 const build = gulp.series(vendor, gulp.parallel(css, js));
 const watch = gulp.series(build, gulp.parallel(watchFiles, browserSync));
+const prepDeploy = gulp.series(build, deleteDist, copyFilesToDist);
 
 // Export tasks
 exports.css = css;
@@ -134,3 +149,4 @@ exports.vendor = vendor;
 exports.build = build;
 exports.watch = watch;
 exports.default = build;
+exports.prepDeploy = prepDeploy;
